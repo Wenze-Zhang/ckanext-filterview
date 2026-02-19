@@ -1,0 +1,5 @@
+Metadata-Version: 2.4
+Name: ckanext-filterview
+Version: 0.0.1
+Requires-Dist: ckan
+Dynamic: requires-dist
