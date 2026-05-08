@@ -39,6 +39,7 @@ jobs:
 
     container:
       image: ckan/ckan-dev:${{ matrix.ckan-version }}
+      options: --user root
 
     services:
       solr:
@@ -63,8 +64,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Non-editable install: copies package into site-packages so the
+      # 'ckanext' namespace path order isn't polluted by the workspace
+      # checkout. CKAN datastore resolves ckanext/datastore/tests/
+      # allowed_functions.txt via ckanext.__path__[0]; with `pip install -e`
+      # that points at $GITHUB_WORKSPACE and the file isn't there.
       - name: Install extension
-        run: pip install -e .
+        run: pip install .
 
       - name: Generate test.ini
         run: cp /srv/app/src/ckan/test-core.ini "$GITHUB_WORKSPACE/test.ini"
