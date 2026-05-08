@@ -1,0 +1,83 @@
+name: Tests
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  # Always-passing sanity job: validates pyproject.toml + builds an sdist/wheel.
+  # Cheap signal of "this repo is a well-formed Python package".
+  build:
+    name: Build & metadata check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install build tooling
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Build sdist and wheel
+        run: python -m build
+
+      - name: Validate package metadata
+        run: twine check dist/*
+
+  # Real pytest run inside the official ckan/ckan-dev container.
+  # NOTE: ckanext/filterview/tests/test_ajax.py currently references the
+  # plugin name 'datatables_view' (inherited from the upstream template).
+  # Until those tests are adapted to the 'filterview' plugin, this job will
+  # fail on first push. Either:
+  #   1. fix the test file, or
+  #   2. rename this file to test.yml.disabled while you iterate.
+  test:
+    name: pytest (CKAN ${{ matrix.ckan-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ckan-version: ["2.11", "2.10"]
+
+    container:
+      image: ckan/ckan-dev:${{ matrix.ckan-version }}
+
+    services:
+      solr:
+        image: ckan/ckan-solr:${{ matrix.ckan-version }}
+      postgres:
+        image: ckan/ckan-postgres-dev:${{ matrix.ckan-version }}
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:3
+
+    env:
+      CKAN_SQLALCHEMY_URL: postgresql://ckan_default:pass@postgres/ckan_test
+      CKAN_DATASTORE_WRITE_URL: postgresql://datastore_write:pass@postgres/datastore_test
+      CKAN_DATASTORE_READ_URL: postgresql://datastore_read:pass@postgres/datastore_test
+      CKAN_SOLR_URL: http://solr:8983/solr/ckan
+      CKAN_REDIS_URL: redis://redis:6379/1
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install extension
+        run: pip install -e .
+
+      - name: Run pytest
+        run: pytest --ckan-ini=test.ini --disable-warnings ckanext/filterview/tests

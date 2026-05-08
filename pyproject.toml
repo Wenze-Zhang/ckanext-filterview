@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ckanext-filterview"
+version = "0.1.0"
+description = "Enhanced CKAN DataTables view with comparison operators (>, <, >=, <=) for numeric and date columns."
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "AGPL-3.0-or-later" }
+authors = [
+    { name = "Wenze Zhang", email = "wenzezhangedu@gmail.com" }
+]
+keywords = ["CKAN", "ckan-extension", "datatables", "filter", "view", "datastore"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: CKAN",
+    "Framework :: Flask",
+    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+]
+
+[project.urls]
+Homepage = "https://github.com/Wenze-Zhang/ckanext-filterview"
+Repository = "https://github.com/Wenze-Zhang/ckanext-filterview"
+Issues = "https://github.com/Wenze-Zhang/ckanext-filterview/issues"
+
+[project.entry-points."ckan.plugins"]
+filterview = "ckanext.filterview.plugin:DataTablesView"
+
+[tool.setuptools.packages.find]
+include = ["ckanext*"]
+exclude = ["dev*", "tests*"]
+
+[tool.setuptools.package-data]
+"ckanext.filterview" = [
+    "assets/**/*",
+    "templates/**/*",
+    "public/**/*",
+    "config_declaration.yaml",
+]
