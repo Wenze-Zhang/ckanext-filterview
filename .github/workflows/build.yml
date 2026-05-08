@@ -1,14 +1,10 @@
 name: Build CKAN Docker 
 
 on:
-  # Trigger the workflow on push or pull request,
-  # but only for the master branch
   push:
-    branches:
-      - master
+    branches: [main, master]
   pull_request:
-    branches:
-      - master
+    branches: [main, master]
 
 jobs: 
   build:  

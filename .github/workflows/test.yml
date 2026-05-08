@@ -7,8 +7,6 @@ on:
     branches: [main, master]
 
 jobs:
-  # Always-passing sanity job: validates pyproject.toml + builds an sdist/wheel.
-  # Cheap signal of "this repo is a well-formed Python package".
   build:
     name: Build & metadata check
     runs-on: ubuntu-latest
@@ -31,13 +29,6 @@ jobs:
       - name: Validate package metadata
         run: twine check dist/*
 
-  # Real pytest run inside the official ckan/ckan-dev container.
-  # NOTE: ckanext/filterview/tests/test_ajax.py currently references the
-  # plugin name 'datatables_view' (inherited from the upstream template).
-  # Until those tests are adapted to the 'filterview' plugin, this job will
-  # fail on first push. Either:
-  #   1. fix the test file, or
-  #   2. rename this file to test.yml.disabled while you iterate.
   test:
     name: pytest (CKAN ${{ matrix.ckan-version }})
     runs-on: ubuntu-latest
@@ -78,6 +69,9 @@ jobs:
 
       - name: Install extension
         run: pip install -e .
+
+      - name: Generate test.ini
+        run: cp /srv/app/src/ckan/test-core.ini test.ini
 
       - name: Run pytest
         run: pytest --ckan-ini=test.ini --disable-warnings ckanext/filterview/tests

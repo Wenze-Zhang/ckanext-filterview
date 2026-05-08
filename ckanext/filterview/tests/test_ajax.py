@@ -7,7 +7,7 @@ from ckan.tests import factories, helpers
 from ckan.lib.helpers import url_for
 
 
-@pytest.mark.ckan_config("ckan.plugins", "datastore datatables_view")
+@pytest.mark.ckan_config("ckan.plugins", "datastore filterview")
 @pytest.mark.usefixtures("with_plugins")
 def test_ajax_data(app, user):
     dataset = factories.Dataset()
@@ -53,7 +53,7 @@ def test_ajax_data(app, user):
     }
 
 
-@pytest.mark.ckan_config("ckan.plugins", "datastore datatables_view")
+@pytest.mark.ckan_config("ckan.plugins", "datastore filterview")
 @pytest.mark.usefixtures("with_plugins")
 def test_ajax_all_returns_full_data(app, user):
     """ajax_all returns all records up to client_side_max_rows."""
@@ -88,7 +88,7 @@ def test_ajax_all_returns_full_data(app, user):
     assert len(data['data']) == 3
 
 
-@pytest.mark.ckan_config("ckan.plugins", "datastore datatables_view")
+@pytest.mark.ckan_config("ckan.plugins", "datastore filterview")
 @pytest.mark.usefixtures("with_plugins")
 def test_ajax_all_respects_max_rows(app, user):
     """ajax_all returns at most client_side_max_rows records."""
