@@ -42,15 +42,11 @@ jobs:
 
     services:
       solr:
-        image: ckan/ckan-solr:${{ matrix.ckan-version }}
+        image: ckan/ckan-solr:${{ matrix.ckan-version }}-solr9
       postgres:
         image: ckan/ckan-postgres-dev:${{ matrix.ckan-version }}
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: postgres
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U ckan_default"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -71,7 +67,11 @@ jobs:
         run: pip install -e .
 
       - name: Generate test.ini
-        run: cp /srv/app/src/ckan/test-core.ini test.ini
+        run: cp /srv/app/src/ckan/test-core.ini "$GITHUB_WORKSPACE/test.ini"
 
+      # Must run from the CKAN source dir: the datastore loads
+      # ckanext/datastore/tests/allowed_functions.txt via a path relative
+      # to CWD, so running pytest from the repo root would 404.
       - name: Run pytest
-        run: pytest --ckan-ini=test.ini --disable-warnings ckanext/filterview/tests
+        working-directory: /srv/app/src/ckan
+        run: pytest --ckan-ini="$GITHUB_WORKSPACE/test.ini" --disable-warnings "$GITHUB_WORKSPACE/ckanext/filterview/tests"
